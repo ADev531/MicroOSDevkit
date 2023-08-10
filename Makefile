@@ -23,4 +23,4 @@ kernelentry.o: kernel.asm
 	nasm -f elf32 kernel.asm -o kernelentry.o
 
 clean:
-	rm *.o *.elf
+	rm $(OBJ) *.elf

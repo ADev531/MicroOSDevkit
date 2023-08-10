@@ -1,4 +1,6 @@
 #pragma once
+#include "../IOPorts.h"
+#include "./Keyboard/keyboard.hpp"
 
 static char* VGAMemory = (char*)0xb8000;
 static int line = 0;
@@ -9,6 +11,10 @@ static const int CONSOLE_HEIGHT = 50;
 
 class VGAConsole {
     public:
+        static void ResetKeyboard() {
+            outb(0x64, 0x20);
+        }
+
         static void PrintChar(char c) {
             VGAMemory[(line * 160) + (col * 2)] = c;
             col++;
