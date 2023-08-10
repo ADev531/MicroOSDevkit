@@ -1,0 +1,42 @@
+#include "../Library/io.h"
+
+int Print(const char* format, ...) {
+    const char* string;
+
+    va_list args;
+    va_start(args, format);
+
+    for(string = format; *string != 0; string++) {
+        while(*string != '%') {
+            if (*string == 0) {
+                break;
+            }
+            else if (*string == '\n') {
+                col = 0;
+                line += 1;
+                string++;
+            } else {
+                VGAConsole::PrintChar(*string);
+                string++;
+            }
+        }
+        if (*string == 0) {
+            break;
+        }
+
+        string++;
+
+        switch (*string)
+        {
+        case 's':
+            VGAConsole::Print(va_arg(args, char*));
+            break;
+        
+        default:
+            break;
+        }
+    }
+    va_end(args);
+    
+    return 0;
+}

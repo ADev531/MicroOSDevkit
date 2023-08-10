@@ -9,6 +9,12 @@ static const int CONSOLE_HEIGHT = 50;
 
 class VGAConsole {
     public:
+        static void PrintChar(char c) {
+            VGAMemory[(line * 160) + (col * 2)] = c;
+            col++;
+            return;
+        }
+
         static void Print(const char* text) {
             for (int i = 0; text[i] != 0; ++i) {
                 if (col == 80) {
