@@ -7,8 +7,6 @@ Default mode, MDKConsole.
 # MDKGraphics
 Only VGA Supported, Max mode is 400x600x256
 
-(Currently only Filled Rectangle)
-
 # Build Your own OS!
 
 Linux : 

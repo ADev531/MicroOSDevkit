@@ -1,5 +1,7 @@
 #include "../Library/io.h"
 #include "../Drivers/Keyboard/keyboard.hpp"
+#include "../Library/convert.hpp"
+#include "../Library/memory.h"
 
 int Print(const char* format, ...) {
     const char* string;
@@ -45,6 +47,56 @@ int Print(const char* format, ...) {
     return 0;
 }
 
+void reverse(char str[], int length)
+{
+    int start = 0;
+    int end = length - 1;
+    while (start < end) {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        end--;
+        start++;
+    }
+}
+// Implementation of tostring()
+char* tostring(int num, char* str)
+{
+    int i = 0;
+    bool isNegative = false;
+ 
+    /* Handle 0 explicitly, otherwise empty string is
+     * printed for 0 */
+    if (num == 0) {
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
+    }
+ 
+    if (num < 0) {
+        isNegative = true;
+        num = -num;
+    }
+ 
+    // Process individual digits
+    while (num != 0) {
+        int rem = num % 10;
+        str[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+        num = num / 10;
+    }
+ 
+    // If number is negative, append '-'
+    if (isNegative)
+        str[i++] = '-';
+ 
+    str[i] = '\0'; // Append string terminator
+ 
+    // Reverse the string
+    reverse(str, i);
+ 
+    return str;
+}
+
 namespace {
     unsigned char transScan(unsigned char target)
     {
@@ -88,8 +140,8 @@ namespace {
             case 0x2D: result = 'x'; break;
             case 0x15: result = 'y'; break;
             case 0x2C: result = 'z'; break;
-            case 0x1c: result = 13;  break; // Enter
-            case 0x39: result = ' '; break; // Space
+            case 0x1c: result = 0x13;  break; // Enter
+            case 0x39: result = ' '; break;  // Space
             case 0x0E: result = 0x08; break; // backspace ascii code = 8
             default: result = 0xFF; break; 
         }
@@ -97,10 +149,95 @@ namespace {
     }
 }
 
-unsigned char GetKey() {
+struct IDT_entry {
+	unsigned short int offset_lowerbits;
+	unsigned short int selector;
+	unsigned char zero;
+	unsigned char type_attr;
+	unsigned short int offset_higherbits;
+}__attribute__((packed));
+
+extern "C" void keyboard_handler();
+extern "C" void load_idt(unsigned long *idt_ptr);
+struct IDT_entry IDT[256];
+
+#define INTERRUPT_GATE 0x8e
+#define KERNEL_CODE_SEGMENT_OFFSET 0x08
+
+static char buffer[256];
+static int index = 0;
+
+unsigned char Keyboard::GetKey() {
+    outb(0x20, 0x20);
     if (inb(0x64) & 0x01) {
-        char key = transScan(inb(0x60));
+        unsigned char key = transScan(inb(0x60));
+        if (key == 0xff) {
+            return 0;
+        }
+        else if (key == 0x13) {
+            VGAConsole::Print("\n");
+            return '\n';
+        }
+        buffer[index++] = key;
+        VGAConsole::PrintChar(key);
         return key;
     }
-    return 0xFF;
+    return 0;
+}
+
+char* Keyboard::GetKeyBuffer() {
+    return buffer;
+}
+
+void Keyboard::ClearKeyBuffer() {
+    for (int i = 0; i < 256; ++i) {
+        buffer[i] = 0;
+    }
+    index = 0;
+}
+
+void idt_init(void) {
+	unsigned long keyboard_address;
+	unsigned long idt_address;
+	unsigned long idt_ptr[2];
+	keyboard_address = (unsigned long)keyboard_handler;
+	IDT[0x21].offset_lowerbits = keyboard_address & 0xffff;
+	IDT[0x21].selector = KERNEL_CODE_SEGMENT_OFFSET;
+	IDT[0x21].zero = 0;
+	IDT[0x21].type_attr = INTERRUPT_GATE;
+	IDT[0x21].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
+	outb(0x20 , 0x11);
+	outb(0xA0 , 0x11);
+	outb(0x21 , 0x20);
+	outb(0xA1 , 0x28);
+	outb(0x21 , 0x00);
+	outb(0xA1 , 0x00);
+	outb(0x21 , 0x01);
+	outb(0xA1 , 0x01);
+	outb(0x21 , 0xff);
+	outb(0xA1 , 0xff);
+	idt_address = (unsigned long)IDT;
+	idt_ptr[0] = (sizeof(struct IDT_entry)*256)+((idt_address & 0xffff) << 16);
+	idt_ptr[1] = idt_address >> 16;
+	load_idt(idt_ptr);
+}
+
+void* operator new (size_t size) {
+    void* buf[size];
+    return buf;
+}
+
+int StringCopy(char *a , char *b) {
+	for(int i = 0; a[i] != '\0'||b[i] != '\0'; i++) {
+		a[i] = b[i];
+	}
+}
+
+int StringMatches(char *Str1 , const char *Str2) {
+	for(int i = 0; Str1[i] != '\0'||Str2[i] != '\0'; i++) {
+		if(Str1[i] != Str2[i]) {
+			return 1;
+		}
+	}
+	return 0;
 }

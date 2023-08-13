@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Screen.hpp"
+#include "Video/font.h"
+#include "../IOPorts.h"
 
 namespace {
 
@@ -14,11 +16,6 @@ namespace {
    {
       asm volatile ("outw %%ax,%%dx": :"dN"(port), "a"(value));
    }
-
-   void outb(unsigned short port, unsigned char value)
-   {
-      asm volatile ("outb %%al,%%dx": :"dN"(port), "a"(value));
-   } 
 
    void outp(unsigned short port, unsigned char value)
    {
@@ -188,7 +185,8 @@ namespace {
 class VGAScreen {
    char* video = (char*)0xA0000;
    public:
-      //Mode* ScreenMode = new Mode(400, 600);
+      int Width = 400;
+      int Height = 600;
       VGAScreen() {
          vga_set_mode(400, 600, 0);
       }
@@ -205,7 +203,23 @@ class VGAScreen {
          }
       }
 
-      //void SetMode(Mode* mde) {
-      //   ScreenMode = mde;
-      //}
+      void DrawFont(int x, int y, char fg, char c) {
+         char* bitmap = fonts[c];
+         int dx,dy;
+         int set;
+         int mask;
+         for (dx=0; dx < 8; dx++) {
+            for (dy=0; dy < 8; dy++) {
+                  set = bitmap[dx] & 1 << y;
+                  if (set) DrawPixel(x+dx,y+dy,fg);
+            }
+         }
+      }
+
+      void SetMode(int width, int height) {
+         if (vga_set_mode(width, height, 0) == 1) {
+            Width = width;
+            Height = height;
+         }
+      }
 };

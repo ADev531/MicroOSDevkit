@@ -1,4 +1,5 @@
 #pragma once
+#include <pthread.h>
 #include "../IOPorts.h"
 #include "./Keyboard/keyboard.hpp"
 

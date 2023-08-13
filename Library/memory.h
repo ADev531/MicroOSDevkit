@@ -1,7 +1,9 @@
-#include <stdint.h>
-typedef unsigned int size_t;
+#pragma once
 
-void* operator new (size_t size) {
-    void* buf[size];
-    return buf;
-}
+#include <stdint.h>
+
+typedef unsigned int size_t;
+void* operator new (size_t size);
+
+int StringCopy(char *a , char *b);
+int StringMatches(char *Str1 , const char *Str2);

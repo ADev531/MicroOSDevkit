@@ -2,4 +2,9 @@
 
 #include "../../IOPorts.h"
 
-unsigned char GetKey();
+class Keyboard {
+    public:
+        static unsigned char GetKey();
+        static char* GetKeyBuffer();
+        static void ClearKeyBuffer();
+};
