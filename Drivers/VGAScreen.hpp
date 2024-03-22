@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Screen.hpp"
-#include "Video/font.h"
 #include "../IOPorts.h"
 
 namespace {
@@ -178,11 +177,10 @@ namespace {
       outb(0x3c0, 0x20); // enable video
 
       return 1;
-
    }
 }
 
-class VGAScreen {
+class VGAScreen : Screen {
    char* video = (char*)0xA0000;
    public:
       int Width = 400;
@@ -202,20 +200,7 @@ class VGAScreen {
             }
          }
       }
-
-      void DrawFont(int x, int y, char fg, char c) {
-         char* bitmap = fonts[c];
-         int dx,dy;
-         int set;
-         int mask;
-         for (dx=0; dx < 8; dx++) {
-            for (dy=0; dy < 8; dy++) {
-                  set = bitmap[dx] & 1 << y;
-                  if (set) DrawPixel(x+dx,y+dy,fg);
-            }
-         }
-      }
-
+      
       void SetMode(int width, int height) {
          if (vga_set_mode(width, height, 0) == 1) {
             Width = width;

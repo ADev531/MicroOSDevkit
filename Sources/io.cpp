@@ -1,7 +1,6 @@
 #include "../Library/io.h"
 #include "../Drivers/Keyboard/keyboard.hpp"
 #include "../Library/convert.hpp"
-#include "../Library/memory.h"
 
 int Print(const char* format, ...) {
     const char* string;
@@ -15,8 +14,7 @@ int Print(const char* format, ...) {
                 break;
             }
             else if (*string == '\n') {
-                col = 0;
-                line += 1;
+                VGAConsole::PrintChar('\n');
                 string++;
             } else {
                 VGAConsole::PrintChar(*string);
@@ -59,6 +57,7 @@ void reverse(char str[], int length)
         start++;
     }
 }
+
 // Implementation of tostring()
 char* tostring(int num, char* str)
 {
@@ -178,8 +177,48 @@ unsigned char Keyboard::GetKey() {
             VGAConsole::Print("\n");
             return '\n';
         }
+        else if (key == 0x08) {
+            if (index > 0) {
+                VGAConsole::SetCol(VGAConsole::GetCol() - 1);
+                VGAConsole::PrintChar(' ');
+                VGAConsole::SetCol(VGAConsole::GetCol() - 1);
+                buffer[index - 1] = 0;
+                index--;
+                return '\b';
+            }
+            else {
+                return '\b';
+            }
+        }
         buffer[index++] = key;
         VGAConsole::PrintChar(key);
+        return key;
+    }
+    return 0;
+}
+
+unsigned char Keyboard::Get() {
+    outb(0x20, 0x20);
+    if (inb(0x64) & 0x01) {
+        unsigned char key = transScan(inb(0x60));
+        if (key == 0xff) {
+            return 0;
+        }
+        else if (key == 0x13) {
+            return '\n';
+        }
+        else if (key == 0x08) {
+            if (index > 0) {
+                buffer[index - 1] = 0;
+                index--;
+                return '\b';
+            }
+            else 
+            {
+                return '\b';
+            }
+        }
+        buffer[index++] = key;
         return key;
     }
     return 0;
@@ -195,6 +234,13 @@ void Keyboard::ClearKeyBuffer() {
     }
     index = 0;
 }
+
+void Keyboard::Reset() {
+    outb(0x64, 0x20);
+}
+
+int VGAConsole::col = 0;
+int VGAConsole::line = 0;
 
 void idt_init(void) {
 	unsigned long keyboard_address;
@@ -220,24 +266,4 @@ void idt_init(void) {
 	idt_ptr[0] = (sizeof(struct IDT_entry)*256)+((idt_address & 0xffff) << 16);
 	idt_ptr[1] = idt_address >> 16;
 	load_idt(idt_ptr);
-}
-
-void* operator new (size_t size) {
-    void* buf[size];
-    return buf;
-}
-
-int StringCopy(char *a , char *b) {
-	for(int i = 0; a[i] != '\0'||b[i] != '\0'; i++) {
-		a[i] = b[i];
-	}
-}
-
-int StringMatches(char *Str1 , const char *Str2) {
-	for(int i = 0; Str1[i] != '\0'||Str2[i] != '\0'; i++) {
-		if(Str1[i] != Str2[i]) {
-			return 1;
-		}
-	}
-	return 0;
 }

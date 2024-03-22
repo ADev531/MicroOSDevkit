@@ -20,7 +20,7 @@ start:
     call osdevkitmain
     hlt
 load_idt:
-    mov edx , [esp+4]
+    mov edx, [esp+4]
     lidt [edx]
     sti
     ret
@@ -28,6 +28,6 @@ keyboard_handler:
     iretd
 
 section .bss
-resb 8192
+resb 16834
 kernel_stack:
 
