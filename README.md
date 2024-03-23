@@ -14,6 +14,9 @@ you need to install nasm, qemu, g++, grub-common, grub-pc-bin, ld.
 Simply run <code>./build</code>!
 Clean objects/elf/iso by <code>make fullclean</code>.
 
+# Debugging OS
+Its simple too, just run <code>make DebugMode</code>!
+
 # MDKConsole
 Default mode, MDKConsole.
 
