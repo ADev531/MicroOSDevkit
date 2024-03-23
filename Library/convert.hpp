@@ -1,1 +1,0 @@
-char* tostring(int num, char* str);
