@@ -1,4 +1,4 @@
-CCFLAGS = -m32 -fno-rtti -fno-exceptions -ffreestanding -Wno-narrowing -Wno-return-local-addr
+CCFLAGS = -m32 -fno-rtti -fno-exceptions -ffreestanding -Wno-narrowing -Wno-return-local-addr -Wno-sizeof-array-argument
 
 CPPFILES := $(shell find -L . -type f -name '*.cpp')
 OBJ := $(CPPFILES:.cpp=.o)

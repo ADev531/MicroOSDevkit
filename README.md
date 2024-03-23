@@ -11,9 +11,8 @@ On debian (ubuntu, linux mint, etc...), You can install needed tools by
 you need to install nasm, qemu, g++, grub-common, grub-pc-bin, ld.
 
 # Building OS
-Simply run <code>make -b</code>!
-Or, if you want build iso, run <code>make BuildISO</code>!
-Clean objects/elf/iso by <code>make clean</code>.
+Simply run <code>./build</code>!
+Clean objects/elf/iso by <code>make fullclean</code>.
 
 # MDKConsole
 Default mode, MDKConsole.

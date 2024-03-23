@@ -2,8 +2,19 @@
 
 #include "../../IOPorts.h"
 
+struct kbddrv {
+    public:
+    void reset();
+    unsigned char get();
+};
+
+typedef struct kbddrv KeyboardDriver;
+
 class Keyboard {
     public:
+        /// @brief Driver for Keyboard class.
+        static KeyboardDriver driver;
+
         /// @brief Resets keyboard.
         static void Reset();
 

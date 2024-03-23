@@ -1,5 +1,7 @@
 [bits 32]
 
+%include "asmlib/gdt.inc"
+
 section .text
     align 4
     dd 0x1BADB002
@@ -15,9 +17,15 @@ start:
     mov esp, kernel_stack
     push 0 ; Flag register reset
     popf
+
+    ; init gdt.
+    call setGdt
+    call reloadSegments
+
     push ebx ; multiboot info pointer
     push eax ; magic
     call osdevkitmain
+    cli
     hlt
 load_idt:
     mov edx, [esp+4]

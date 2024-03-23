@@ -1,11 +1,12 @@
 #pragma once
 #include "../IOPorts.h"
+#include "../Library/stdint.h"
 #include "./Keyboard/keyboard.hpp"
 
 static char* VGAMemory = (char*)0xb8000;
 
-static const int CONSOLE_WIDTH = 160;
-static const int CONSOLE_HEIGHT = 50;
+static int CONSOLE_WIDTH = 80;
+static int CONSOLE_HEIGHT = 25;
 
 class VGAConsole {
     static int line;
@@ -18,15 +19,27 @@ class VGAConsole {
             Clear();
         }
 
+        static void MoveCursor(int x, int y)
+        {
+            uint16_t pos = y * CONSOLE_WIDTH + x;
+        
+            outb(0x3D4, 0x0F);
+            outb(0x3D5, (uint8_t) (pos & 0xFF));
+            outb(0x3D4, 0x0E);
+            outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+        }
+
         static void PrintChar(char c) {
             if (c == '\n') {
                 line += 1;
                 col = 0;
+                MoveCursor(col, line);
                 return;
             }
 
-            VGAMemory[(line * 160) + (col * 2)] = c;
+            VGAMemory[(line * CONSOLE_WIDTH * 2) + (col * 2)] = c;
             col++;
+            MoveCursor(col, line);
             return;
         }
 
@@ -42,6 +55,7 @@ class VGAConsole {
                     PrintChar(text[i]);
                 }
             }
+            MoveCursor(col, line);
         }
 
         static int GetCol() {
@@ -61,11 +75,13 @@ class VGAConsole {
         }
 
         static void Clear(int c) {
-            for (int i = 0; i < CONSOLE_HEIGHT * CONSOLE_WIDTH; ++i) {
+            col = 0;
+            line = 0;
+            for (int i = 0; i < CONSOLE_HEIGHT * CONSOLE_WIDTH * 2; ++i) {
                 if (col % 2 != 0) {
-                    VGAMemory[(line * 160) + col] = c;
+                    VGAMemory[(line * (CONSOLE_WIDTH * 2)) + col] = c;
                 } else {
-                    VGAMemory[(line * 160) + col] = 0;
+                    VGAMemory[(line * (CONSOLE_WIDTH * 2)) + col] = 0;
                 }
                 col++;
             }
